@@ -10,6 +10,7 @@ package kcp
 import (
 	"crypto/rand"
 	"encoding/binary"
+	"fmt"
 	"hash/crc32"
 	"io"
 	"net"
@@ -281,13 +282,18 @@ func (s *UDPSession) WriteBuffers(v [][]byte) (n int, err error) {
 			for _, b := range v {
 				n += len(b)
 				for {
-					if len(b) <= int(s.kcp.mss) {
-						s.kcp.Send(b)
-						break
-					} else {
-						s.kcp.Send(b[:s.kcp.mss])
-						b = b[s.kcp.mss:]
+					e := s.kcp.Send(b)
+					if e != 0 {
+						err = errors.New(fmt.Sprintf("Send error code: %d", e))
+						return
 					}
+					// if len(b) <= int(s.kcp.mss) {
+					// 	s.kcp.Send(b)
+					// 	break
+					// } else {
+					// 	s.kcp.Send(b[:s.kcp.mss])
+					// 	b = b[s.kcp.mss:]
+					// }
 				}
 			}
 
