@@ -281,20 +281,20 @@ func (s *UDPSession) WriteBuffers(v [][]byte) (n int, err error) {
 		if waitsnd < int(s.kcp.snd_wnd) && waitsnd < int(s.kcp.rmt_wnd) {
 			for _, b := range v {
 				n += len(b)
-				for {
-					e := s.kcp.Send(b)
-					if e != 0 {
-						err = errors.New(fmt.Sprintf("Send error code: %d", e))
-						return
-					}
-					// if len(b) <= int(s.kcp.mss) {
-					// 	s.kcp.Send(b)
-					// 	break
-					// } else {
-					// 	s.kcp.Send(b[:s.kcp.mss])
-					// 	b = b[s.kcp.mss:]
-					// }
+				e := s.kcp.Send(b)
+				if e != 0 {
+					err = errors.New(fmt.Sprintf("Send error code: %d", e))
+					return
 				}
+				// for {
+				// 	if len(b) <= int(s.kcp.mss) {
+				// 		s.kcp.Send(b)
+				// 		break
+				// 	} else {
+				// 		s.kcp.Send(b[:s.kcp.mss])
+				// 		b = b[s.kcp.mss:]
+				// 	}
+				// }
 			}
 
 			waitsnd = s.kcp.WaitSnd()
